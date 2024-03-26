@@ -1,4 +1,4 @@
-name: Build with Maven
+name: Publish on Maven Central
 
 on:
   workflow_dispatch:
@@ -32,20 +32,20 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
       with:
         servers: >
-      [
-        {
-          "id": "nexus",
-          "username": "${env.MAVEN_USERNAME}",
-          "password": "${env.MAVEN_PASSWORD}",
-          "configuration": {
-            "httpConfiguration": {
-              "all": {
-                "usePreemptive": "true"
+          [
+            {
+              "id": "nexus",
+              "username": "${env.MAVEN_USERNAME}",
+              "password": "${env.MAVEN_PASSWORD}",
+              "configuration": {
+                "httpConfiguration": {
+                  "all": {
+                    "usePreemptive": "true"
+                  }
+                }
               }
             }
-          }
-        }
-      ]
+          ]
     - name: Publish package
       run: mvn --batch-mode deploy
       env:
