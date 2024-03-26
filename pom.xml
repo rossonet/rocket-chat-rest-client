@@ -3,9 +3,32 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.github.baloise</groupId>
+	<groupId>net.rossonet</groupId>
 	<artifactId>rocket-chat-rest-client</artifactId>
-	<version>0.1.2-SNAPSHOT</version>
+	<name>RocketChat client</name>
+    <version>0.1.2</version>
+    <description>Rocket Chat rest client</description>
+    <url>https://github.com/baloise/rocket-chat-rest-client</url>
+    <licenses>
+    	<license>
+			<name>MIT license</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+		</license>
+    </licenses>
+    <scm>
+        <url>https://github.com/rossonet/rocket-chat-rest-client</url>
+		<connection>scm:git:git@github.com:rossonet/rocket-chat-rest-client.git</connection>
+    </scm>
+    <developers>
+		<developer>
+			<name>Andrea Ambrosini</name>
+			<email>andrea.ambrosini@rossonet.org</email>
+			<roles>
+				<role>CI Integration</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
+	</developers>
 	<properties>
 		<jackson.version>2.10.0.pr1</jackson.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -40,7 +63,6 @@
 
 	<build>
 		<plugins>
-			<!-- Compile plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -49,142 +71,61 @@
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>io.fabric8</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.36.0</version>
-				<extensions>true</extensions>
-				<executions>
-					<execution>
-						<id>prepare-rocketchat</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>build</goal>
-							<goal>start</goal>
-						</goals>
-						<configuration>
-							<autoCreateCustomNetworks>true</autoCreateCustomNetworks>
-							<images>
-								<image>
-									<name>rocketchat/rocket.chat:latest</name>
-									<alias>rocketchat</alias>
-									<run>
-										<log>
-											<enabled>false</enabled>
-										</log>
-										<network>
-											<name>backend</name>
-											<alias>rocketchat</alias>
-										</network>
-										<dependsOn>
-											<container>mongo</container>
-										</dependsOn>
-										<env>
-											<API_Enable_Rate_Limiter>false</API_Enable_Rate_Limiter>
-											<MONGO_URL>mongodb://mongo:27017/rocketchat</MONGO_URL>
-											<MONGO_OPLOG_URL>mongodb://mongo:27017/local</MONGO_OPLOG_URL>
-    										<Log_Level>2</Log_Level>
-    										<ADMIN_USERNAME>admin</ADMIN_USERNAME>
- 											<ADMIN_PASS>supersecret</ADMIN_PASS>
- 											<ADMIN_EMAIL>admin@example.com</ADMIN_EMAIL>
-										</env>
-										<wait>
-											<http>
-												<url>http://localhost:23737</url>
-											</http>
-											<time>60000</time>
-										</wait>
-										<ports>
-											<port>23737:3000</port>
-										</ports>
-									</run>
-
-								</image>
-
-								<image>
-									<name>mongo:3.6</name>
-									<alias>mongo</alias>
-									<run>
-										<log>
-											<enabled>false</enabled>
-										</log>
-										<wait>
-											<log>waiting for connections on port 27017</log>
-											<time>20000</time>
-										</wait>
-										<cmd>mongod --smallfiles --oplogSize 128 --replSet rs0</cmd>
-										<network>
-											<name>backend</name>
-											<alias>mongo</alias>
-										</network>
-									</run>
-								</image>
-
-								<image>
-									<name>mongo:3.6</name>
-									<alias>mongo-init-replica</alias>
-									<run>
-										<log>
-											<enabled>false</enabled>
-										</log>
-										<cmd>
-											<arg>mongo</arg>
-											<arg>mongo/rocketchat</arg>
-											<arg>--eval</arg>
-											<arg>rs.initiate({ _id:'rs0', members: [ { _id: 0, host:
-												'localhost:27017' }]})</arg>
-										</cmd>
-										<network>
-											<name>backend</name>
-											<alias>mongo-init-replica</alias>
-										</network>
-									</run>
-								</image>
-
-							</images>
-						</configuration>
-					</execution>
-					<execution>
-						<id>remove-rocketchat</id>
-						<phase>post-integration-test</phase>
-						<goals>
-							<goal>stop</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.19.1</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<trimStackTrace>false</trimStackTrace>
-				</configuration>
-			</plugin>
-		</plugins>
+            </plugin>
+            <plugin>
+              <artifactId>maven-source-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>attach-sources</id>
+                  <goals><goal>jar</goal></goals>
+                </execution>
+              </executions>
+            </plugin>
+            <plugin>
+              <artifactId>maven-javadoc-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>attach-javadocs</id>
+                  <goals><goal>jar</goal></goals>
+                </execution>
+              </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.13</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>nexus</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.2.2</version>
+                <configuration>
+                    <keyname>7FB5B9C191C2C6C6A68966C2D9860D2737DD2B6F</keyname>
+                </configuration>
+                <executions>
+                  <execution>
+                    <id>sign-artifacts</id>
+                    <phase>verify</phase>
+                    <goals>
+                      <goal>sign</goal>
+                    </goals>
+                  </execution>
+                </executions>
+            </plugin>
+        </plugins>
 	</build>
-
 	<distributionManagement>
 		<repository>
-			<id>repo-release</id>
-			<name>Craftyn Releases</name>
-			<url>https://repo.craftyn.com/repository/internal/</url>
+			<id>nexus</id>
+			<name>Sonatype</name>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
 		</repository>
-		<snapshotRepository>
-			<id>repo-snapshot</id>
-			<name>Craftyn Snapshots</name>
-			<url>https://repo.craftyn.com/repository/snapshots/</url>
-		</snapshotRepository>
 	</distributionManagement>
+
 </project>
