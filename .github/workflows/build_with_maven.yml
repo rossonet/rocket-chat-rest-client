@@ -50,4 +50,5 @@ jobs:
       run: mvn --batch-mode deploy
       env:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_TTY: $(tty)
 
